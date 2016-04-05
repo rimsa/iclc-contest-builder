@@ -47,7 +47,7 @@ if [ $# -lt 1 ]; then
     echo "    -a           Add the problems to the blacklist";
     echo;
     echo "Type of problems";
-    for c in $(jot - 1 ${#CHAPTERS[@]}); do
+    for c in $(seq 1 ${#CHAPTERS[@]}); do
         echo "  ${c}:     ${CHAPTERS[$((c-1))]}";
     done
     echo;
@@ -63,7 +63,7 @@ if [ $# -lt 1 ]; then
 fi
 
 # Problems selection count by chapter 
-for c in $(jot - 1 "${#CHAPTERS[@]}"); do
+for c in $(seq 1 "${#CHAPTERS[@]}"); do
     SELECTIONS[$c]=0
     MIN_LEVEL[$c]=${LOWER_LEVEL};
     MAX_LEVEL[$c]=${HIGHER_LEVEL};
@@ -120,13 +120,13 @@ done
 ALL=();
 total=0;
 
-for c in $(jot - 1 "${#CHAPTERS[@]}"); do
+for c in $(seq 1 "${#CHAPTERS[@]}"); do
     [ ${SELECTIONS[$c]} -eq 0 ] && continue;
 
     ${DEBUG} && echo -n "Selecting ${SELECTIONS[$c]} of ${CHAPTERS[$((c-1))]} problems:";
 
     count=$(eval "echo \${#PROBLEMS_${c}[@]}");
-    for x in $(jot - 1 ${SELECTIONS[$c]}); do
+    for x in $(seq 1 ${SELECTIONS[$c]}); do
         # just to ensure unique problems
         while true; do
             problem=$(eval "echo \${PROBLEMS_${c}[$((RANDOM % count))]}");
@@ -148,7 +148,12 @@ if [ "$total" -eq 0 ]; then
 fi
 
 if ${SORT}; then
-    SORTED="$((for p in ${ALL[@]}; do echo $p; done) | gsort -R)";
+    sort="gsort";
+    if [ -z "$(which $sort)" ]; then
+        sort="sort";
+    fi
+
+    SORTED="$((for p in ${ALL[@]}; do echo $p; done) | $sort -R)";
     ${DEBUG} && echo "Sorted problems: $(echo ${SORTED})";
 else
     SORTED="$(for p in ${ALL[@]}; do echo $p; done)";
@@ -184,7 +189,7 @@ fi
 # Printing the final stats
 ${DEBUG} && echo;
 echo "Generated:";
-for c in $(jot - 1 "${#CHAPTERS[@]}"); do
+for c in $(seq 1 "${#CHAPTERS[@]}"); do
     [ "${SELECTIONS[$c]}" -eq 0 ] && continue;
 
     printf " %2d (%s)\n" "${SELECTIONS[$c]}" "${CHAPTERS[$((c-1))]}";
